@@ -45,6 +45,7 @@ class Head(nn.Module):
         self.key = nn.Linear(dim_embedding, head_size, bias=False) # false means matrix multiply with out bias
         self.query = nn.Linear(dim_embedding, head_size, bias=False)
         self.value = nn.Linear(dim_embedding, head_size, bias = False)
+        self.head_size = head_size
         
         # for later use
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size))) # not a model parameter
@@ -57,7 +58,7 @@ class Head(nn.Module):
         # computing attention score
         # # keep batch dimension in mind, only transpose last two dim for each batch dimension
         # then normalize by key, query dimension to not have too large dot products
-        weights = q @ k.transpose(-2, -1) * C**-0.5 # (B, T, C) @ (B, C, T) -> (B, T, T)
+        weights = q @ k.transpose(-2, -1) * self.head_size**-0.5 # (B, T, C) @ (B, C, T) -> (B, T, T)
 
         # we dont want future tokens influence current ones -> set upper triangle -inf
         weights = weights.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
@@ -67,6 +68,51 @@ class Head(nn.Module):
         v = self.value(x) # (B, T, C)
         out = weights @ v # (B, T, T) @ (B, T, C) -> (B, T, C)
         return out
+
+
+class MultiHeadAttention(nn.Module):
+    """multiple heads of attention working in parallel"""
+    
+    def __init__(self, num_heads, head_size):
+        super().__init__()
+        self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
+        self.proj = nn.Linear(dim_embedding, dim_embedding) # projection layer for residual conenction
+        
+    def forward(self, x):
+        out = torch.cat([h(x) for h in self.heads], dim=-1)
+        out = self.proj(out)
+        return out
+
+class FeedForward(nn.Module):
+    """a simple linear layer with a ReLU activation"""
+    
+    def __init__(self, dim_embedding):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(dim_embedding, 4 * dim_embedding), # 4x channel size for innder dimension as AAYN paper suggests
+            nn.ReLU(),
+            nn.Linear(4 * dim_embedding, dim_embedding),  
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+class Block(nn.Module):
+    """ Transformer block"""
+    
+    def __init__(self, dim_embedding, n_head):
+        # dim_embedding: embedding dimension, n_head: number of attention heads
+        super().__init__()
+        head_size = dim_embedding // n_head
+        self.sa = MultiHeadAttention(n_head, head_size)
+        self.ffwd = FeedForward(dim_embedding)
+        self.ln1 = nn.LayerNorm(dim_embedding) # unit mean and gaussian at initliazation for features
+        self.ln2 = nn.LayerNorm(dim_embedding) # layer norm for self attention
+
+    def forward(self, x):
+        x = x + self.sa(self.ln1(x)) # x + is residual connection forking off
+        x = x + self.ffwd(self.ln2(x)) # added layer norm 
+        return x
 
 # data loading
 def get_batch(split):
@@ -107,7 +153,15 @@ class BigramLanguageModel(nn.Module):
     # each token reads off the logits for the next token from lookup table
     self.token_embedding_table = nn.Embedding(vocab_size, dim_embedding)
     self.position_embedding_table = nn.Embedding(block_size, dim_embedding)
-    self.sa_head = Head(dim_embedding) # self-attention head
+    
+    self.blocks = nn.Sequential(
+        Block(dim_embedding, n_head=4),
+        Block(dim_embedding, n_head=4),
+        Block(dim_embedding, n_head=4),
+        nn.LayerNorm(dim_embedding)
+    )
+    #self.sa_heads = MultiHeadAttention(4, dim_embedding//4) # 4 heads of self attention, each with embedding dimension of 8 (32//4)
+    #self.ffwd = FeedForward(dim_embedding) # feed forward layer
     self.lm_head = nn.Linear(dim_embedding, vocab_size) # languange modeling head
 
   def forward(self, idx, targets=None):
@@ -119,8 +173,12 @@ class BigramLanguageModel(nn.Module):
     token_embedding = self.token_embedding_table(idx) # (B,T,C) batch x time x channel (4x8x65)
     position_embedding = self.position_embedding_table(torch.arange(T, device = device))
     x = token_embedding + position_embedding # (B, T, C)
-    x = self.sa_head(x) # apply one head of attnetion (B, T, C)
-    logits = self.lm_head(token_embedding) # (B, T, vocab_size)
+    x = self.blocks(x) # (B, T, C) after transformer blocks
+    
+    #x = self.sa_heads(x) # apply one head of attnetion (B, T, C)
+    #x = self.ffwd(x) # apply feed forward layer (B, T, C)
+    
+    logits = self.lm_head(x) # (B, T, vocab_size)
 
     if targets is None:
       loss = None
