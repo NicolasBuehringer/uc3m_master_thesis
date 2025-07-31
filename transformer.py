@@ -2,14 +2,22 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-batch_size = 32
-block_size = 8
+
+# warning, takes 50 minutes to train on Tesla T4 GPU
+# use small hyperparamteres for local testing
+
+
+batch_size = 64 # 32 for small, how many independent sequences to process in parallel
+block_size = 256 # 8 for small, what is the maximum context length for predictions
 max_iters = 5000
 eval_interval = 500
-learning_rate = 1e-3
+learning_rate = 3e-4 # 1e-3 for small, smaller because of larger model
 device = "cuda" if torch.cuda.is_available() else "cpu"
 eval_iters = 200
-dim_embedding = 32
+dim_embedding = 384 # 32 for small, each head 64 dimensions
+n_head = 6 # 4 for small
+n_layer = 6 # 2 for small
+dropout = 0.2 # 0.1 for small
 
 torch.manual_seed(42)
 
@@ -20,10 +28,10 @@ torch.manual_seed(42)
 with open('input.txt', 'r', encoding='utf-8') as f:
     text = f.read()
     
-    
 chars = sorted(list(set(text)))
 vocab_size = len(chars)
 
+# character tokenization
 stoi = {ch:i for i,ch in enumerate(chars)}
 itos = {i:ch for i,ch in enumerate(chars)}
 
@@ -31,6 +39,8 @@ encode = lambda s: [stoi[c] for c in s] # encoder: from string, output a list of
 decode = lambda l: "".join([itos[i] for i in l]) # decoder from list of integers, output a string
 
 data = torch.tensor(encode(text), dtype=torch.long)
+
+# train test split
 n = int(0.9*len(data))
 train_data = data[:n]
 val_data = data[n:]
@@ -46,6 +56,7 @@ class Head(nn.Module):
         self.query = nn.Linear(dim_embedding, head_size, bias=False)
         self.value = nn.Linear(dim_embedding, head_size, bias = False)
         self.head_size = head_size
+        self.dropout = nn.Dropout(dropout)
         
         # for later use
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size))) # not a model parameter
@@ -63,6 +74,7 @@ class Head(nn.Module):
         # we dont want future tokens influence current ones -> set upper triangle -inf
         weights = weights.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
         weights = F.softmax(weights, dim=-1)
+        weights = self.dropout(weights)
         
         # perform weighted aggregation of key, query dot product with value map
         v = self.value(x) # (B, T, C)
@@ -77,10 +89,12 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
         self.proj = nn.Linear(dim_embedding, dim_embedding) # projection layer for residual conenction
+        self.dropout = nn.Dropout(dropout)
         
     def forward(self, x):
         out = torch.cat([h(x) for h in self.heads], dim=-1)
         out = self.proj(out)
+        out = self.dropout(out)
         return out
 
 class FeedForward(nn.Module):
@@ -91,7 +105,8 @@ class FeedForward(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(dim_embedding, 4 * dim_embedding), # 4x channel size for innder dimension as AAYN paper suggests
             nn.ReLU(),
-            nn.Linear(4 * dim_embedding, dim_embedding),  
+            nn.Linear(4 * dim_embedding, dim_embedding),
+            nn.Dropout(dropout)  # dropout for regularization  
         )
 
     def forward(self, x):
@@ -143,9 +158,7 @@ def estimate_loss():
     model.train()
     return out
 
-
-# simple bigram model
-class BigramLanguageModel(nn.Module):
+class DecoderTransformerModel(nn.Module):
 
   def __init__(self):
     super().__init__()
@@ -154,12 +167,10 @@ class BigramLanguageModel(nn.Module):
     self.token_embedding_table = nn.Embedding(vocab_size, dim_embedding)
     self.position_embedding_table = nn.Embedding(block_size, dim_embedding)
     
-    self.blocks = nn.Sequential(
-        Block(dim_embedding, n_head=4),
-        Block(dim_embedding, n_head=4),
-        Block(dim_embedding, n_head=4),
-        nn.LayerNorm(dim_embedding)
-    )
+    self.blocks = nn.Sequential(*[Block(dim_embedding, n_head = n_head) for _ in range(n_layer)]) # stack of transformer blocks
+    self.ln_final = nn.LayerNorm(dim_embedding)
+    
+    # from without block
     #self.sa_heads = MultiHeadAttention(4, dim_embedding//4) # 4 heads of self attention, each with embedding dimension of 8 (32//4)
     #self.ffwd = FeedForward(dim_embedding) # feed forward layer
     self.lm_head = nn.Linear(dim_embedding, vocab_size) # languange modeling head
@@ -193,7 +204,7 @@ class BigramLanguageModel(nn.Module):
 
   def generate(self, idx, max_new_tokens):
 
-    # idx is (B, T) array of indices in the current context
+    # Autoregressively generate next tokens using Transformer model
 
     for _ in range(max_new_tokens):
 
@@ -215,7 +226,7 @@ class BigramLanguageModel(nn.Module):
         idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
     return idx
 
-model = BigramLanguageModel()
+model = DecoderTransformerModel()
 
 # move model parameters to gpu
 m = model.to(device)
