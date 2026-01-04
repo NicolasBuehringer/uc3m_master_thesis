@@ -2,8 +2,10 @@
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/Status-Refactored-success)
+[![Thesis PDF](https://img.shields.io/badge/Read_Thesis-PDF-red?logo=adobe-acrobat-reader&logoColor=white)](master_thesis.pdf)
+![License: MIT](https://img.shields.io/badge/Code_License-MIT-green)
+![License: CC BY-NC-ND](https://img.shields.io/badge/Thesis_License-CC%20BY--NC--ND-lightgrey)
+
 
 ## 📌 Project Overview
 
@@ -18,13 +20,13 @@ By treating intraday return sequences as "tokens," VolFormer leverages self-atte
 
 ## 🚀 Key Engineering Features
 
-This repository represents a **production-grade refactoring** of the original research code, emphasizing modularity, reproducibility, and scalability.
+This repository is built on a **modular, production-oriented framework** designed for reproducibility and scalability in financial machine learning.
 
-- **🏗️ Modular Architecture**: The monolithic research code has been decoupled into distinct domains (`data`, `models`, `training`), ensuring strict separation of concerns and testability.
-- **⚙️ Config-Driven Experiments**: Training runs are fully reproducible via centralized YAML configuration files. No more hardcoded hyperparameters.
-- **📊 Professional Logging**: Integrated `logging` module replaces ad-hoc print statements, providing structured, readable logs for experiment tracking.
-- **⚡ CUDA-Optimized**: Data loaders and training loops are optimized for GPU acceleration, utilizing Mixed Precision (AMP) and pinned memory for maximum throughput.
-- **🛡️ Data Leakage Protection**: The preprocessing pipeline implements rigorous checks (e.g., removing overnight returns, strict day alignment) to ensure no future information leaks into the training set—a critical requirement for valid financial backtesting.
+- **🏗️ Modular Architecture**: The codebase is strictly decoupled into distinct domains (`data`, `models`, `training`), ensuring separation of concerns, easy extensibility, and robust testability.
+- **⚙️ Config-Driven Experiments**: Training runs are fully defined by centralized YAML configuration files, eliminating hardcoded hyperparameters and ensuring every experiment is strictly reproducible.
+- **📊 Professional Logging**: An integrated `logging` system provides structured, persistent tracking of experiments, metrics, and model states.
+- **⚡ CUDA-Optimized**: Data pipelines and training loops are engineered for high-performance GPU acceleration, utilizing Mixed Precision (AMP) and pinned memory to maximize throughput during large-scale training.
+- **🛡️ Data Leakage Protection**: The preprocessing pipeline implements rigorous validation (e.g., removing overnight returns, strict day alignment) to ensure no future information leaks into the training set—a critical requirement for valid financial backtesting.
 
 ---
 
@@ -43,8 +45,9 @@ At its core, VolFormer adapts the standard Transformer Encoder for regression ta
 ```text
 .
 ├── configs/                 # Experiment configurations
-│   ├── default.yaml         # Main production config
-│   └── test_config.yaml     # Fast CI/CD test config
+│   ├── default.yaml         # Main training config
+│   └── test_config.yaml     # CI/CD test config
+├── master_thesis.pdf        # final thesis pdf
 ├── plots/                   # Visualization assets
 ├── raw_data/                # Dataset storage
 ├── src/                     # Source code
@@ -72,8 +75,8 @@ At its core, VolFormer adapts the standard Transformer Encoder for regression ta
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/Start-sys/volformer.git
-    cd volformer
+    git clone https://github.com/NicolasBuehringer/uc3m_master_thesis.git
+    cd uc3m_master_thesis
     ```
 
 2.  **Install dependencies**:
@@ -110,10 +113,13 @@ One of the key advantages of Attention mechanisms is **interpretability**. The h
 
 ## 🎓 Academic Context
 
-This project was originally developed for a **Master's Thesis** at **Universidad Carlos III de Madrid (UC3M)**. The research focused on benchmarking Deep Learning architectures against established heterogeneous autoregressive (HAR) models in the context of high-frequency trading data.
+This project was developed for a **Master's Thesis** at **Universidad Carlos III de Madrid (UC3M)**. The research focused on benchmarking Deep Learning architectures against established heterogeneous autoregressive (HAR) models in the context of high-frequency trading data.
 
 ---
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+This project features a dual-licensing structure to respect both open-source software standards and academic intellectual property:
+
+* **Code:** The source code in this repository is distributed under the **MIT License**. You are free to use, modify, and distribute the code for any purpose, provided credit is given.
+* **Thesis Document:** The written dissertation (`master_thesis.pdf`) is licensed under **Creative Commons Attribution – Non Commercial – Non Derivatives (CC BY-NC-ND)**.
