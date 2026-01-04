@@ -107,7 +107,7 @@ One of the key advantages of Attention mechanisms is **interpretability**. The h
 | **Head 1 Attention Pattern** | **Head 2 Attention Pattern** |
 |:----------------------------:|:----------------------------:|
 | ![Head 1](plots/attention_Apple_L2_H1_day349.png) | ![Head 2](plots/attention_Apple_L2_H2_day349.png) |
-| *Focus on specific market open intervals* | *Broader attention across the trading day* |
+| *Broader attention across the trading day* | *Focus on specific anchoring minutes* |
 
 ---
 
