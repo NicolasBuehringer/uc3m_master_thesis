@@ -1,5 +1,5 @@
 .agent
-.checkpoints
-.checkpoints_test
-.raw_data
+checkpoints
+checkpoints_test
+raw_data/
 .env
