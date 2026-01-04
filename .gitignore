@@ -4,3 +4,4 @@ checkpoints_test
 raw_data/
 .env
 plots/
+.DS_Store
