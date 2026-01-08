@@ -7,7 +7,7 @@
 ![License: CC BY-NC-ND](https://img.shields.io/badge/Thesis_License-CC%20BY--NC--ND-lightgrey)
 
 
-## 📌 Project Overview
+## Project Overview
 
 **VolFormer** is a specialized Transformer architecture designed to forecast **Realized Volatility (RV)** in financial markets. Developed as part of a Master's Thesis at UC3M, this project bridges the gap between state-of-the-art Natural Language Processing techniques and financial time-series analysis.
 
@@ -17,30 +17,30 @@ By treating intraday return sequences as "tokens," VolFormer leverages self-atte
 > Accurate volatility forecasting is the cornerstone of **quantitative risk management** and **options pricing**. In a market driven by uncertainty, the ability to anticipate variance allows institutional investors to hedge effectively and price derivatives with greater precision.
 
 ---
-
-## 🚀 Key Engineering Features
-
-This repository is built on a **modular, production-oriented framework** designed for reproducibility and scalability in financial machine learning.
-
-- **🏗️ Modular Architecture**: The codebase is strictly decoupled into distinct domains (`data`, `models`, `training`), ensuring separation of concerns, easy extensibility, and robust testability.
-- **⚙️ Config-Driven Experiments**: Training runs are fully defined by centralized YAML configuration files, eliminating hardcoded hyperparameters and ensuring every experiment is strictly reproducible.
-- **📊 Professional Logging**: An integrated `logging` system provides structured, persistent tracking of experiments, metrics, and model states.
-- **⚡ CUDA-Optimized**: Data pipelines and training loops are engineered for high-performance GPU acceleration, utilizing Mixed Precision (AMP) and pinned memory to maximize throughput during large-scale training.
-- **🛡️ Data Leakage Protection**: The preprocessing pipeline implements rigorous validation (e.g., removing overnight returns, strict day alignment) to ensure no future information leaks into the training set—a critical requirement for valid financial backtesting.
-
----
-
-## 🧠 The VolFormer Model
+## The VolFormer Model
 
 At its core, VolFormer adapts the standard Transformer Encoder for regression tasks:
 *   **Input**: Rolling window of intraday log-returns (e.g., 10-minute intervals).
 *   **Positional Encodings**: Learnable embeddings to retain temporal order.
 *   **Self-Attention**: Multi-head attention layers that allow the model to weigh the importance of different intraday periods dynamically.
-*   **CLS Token**: A learnable token (similar to BERT) pools the sequence information into a single context vector for the final volatility prediction.
+*   **CLS Token**: A learnable token pools the sequence information into a single context vector for the final volatility prediction.
+* **CUDA optimized**, using Mixed Precision (AMP) and pinned memory
+
+---
+## 📈 Visuals & Results
+
+The heatmaps below illustrate how VolFormer attends to specific intraday intervals, effectively "learning" which times of day are most influential.
+
+| **Head 1 Attention Pattern** | **Head 2 Attention Pattern** |
+|:----------------------------:|:----------------------------:|
+| ![Head 1](plots/attention_Apple_L2_H1_day349.png) | ![Head 2](plots/attention_Apple_L2_H2_day349.png) |
+| *Broader attention across the trading day* | *Focus on specific anchoring minutes* |
 
 ---
 
-## 📂 Project Structure
+---
+
+## Project Structure
 
 ```text
 .
@@ -65,7 +65,7 @@ At its core, VolFormer adapts the standard Transformer Encoder for regression ta
 
 ---
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### Prerequisites
 *   Python 3.9+
@@ -100,17 +100,6 @@ python3 train.py --config configs/my_experiment.yaml
 
 ---
 
-## 📈 Visuals & Results
-
-One of the key advantages of Attention mechanisms is **interpretability**. The heatmaps below illustrate how VolFormer attends to specific intraday intervals during high-volatility events, effectively "learning" which times of day are most predictive.
-
-| **Head 1 Attention Pattern** | **Head 2 Attention Pattern** |
-|:----------------------------:|:----------------------------:|
-| ![Head 1](plots/attention_Apple_L2_H1_day349.png) | ![Head 2](plots/attention_Apple_L2_H2_day349.png) |
-| *Broader attention across the trading day* | *Focus on specific anchoring minutes* |
-
----
-
 ## 🎓 Academic Context
 
 This project was developed for a **Master's Thesis** at **Universidad Carlos III de Madrid (UC3M)**. The research focused on benchmarking Deep Learning architectures against established heterogeneous autoregressive (HAR) models in the context of high-frequency trading data.
@@ -122,4 +111,4 @@ This project was developed for a **Master's Thesis** at **Universidad Carlos III
 This project features a dual-licensing structure to respect both open-source software standards and academic intellectual property:
 
 * **Code:** The source code in this repository is distributed under the **MIT License**. You are free to use, modify, and distribute the code for any purpose, provided credit is given.
-* **Thesis Document:** The written dissertation (`master_thesis.pdf`) is licensed under **Creative Commons Attribution – Non Commercial – Non Derivatives (CC BY-NC-ND)**.
+* **Thesis Document:** The written thesis (`master_thesis.pdf`) is licensed under **Creative Commons Attribution – Non Commercial – Non Derivatives (CC BY-NC-ND)**.
