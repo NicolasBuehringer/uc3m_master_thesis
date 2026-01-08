@@ -1,6 +1,6 @@
 # VolFormer: A Transformer-Based Approach to Stock Volatility Forecasting
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c)
 [![Thesis PDF](https://img.shields.io/badge/Read_Thesis-PDF-red?logo=adobe-acrobat-reader&logoColor=white)](master_thesis.pdf)
 ![License: MIT](https://img.shields.io/badge/Code_License-MIT-green)
