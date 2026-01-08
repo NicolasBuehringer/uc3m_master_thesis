@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import TensorDataset, DataLoader
-from typing import List, Tuple, Dict, Optional
 from .preprocessing import preprocess_stock_interval, create_sequences_interval, scaler
 
 class VolatilityDataset:
@@ -14,14 +13,14 @@ class VolatilityDataset:
     """
     def __init__(self, config):
         self.config = config
-        self.data_dir = config['data']['data_dir']
-        self.tickers = config['data'].get('tickers', [])
+        self.data_dir = config["data"]["data_dir"]
+        self.tickers = config["data"].get("tickers", [])
         
         # Hyperparams
-        self.train_frac = config['data']['train_frac']
-        self.val_frac = config['data']['val_frac']
-        self.interval_minutes = config['data']['interval_minutes']
-        self.n_days = config['data']['n_days']
+        self.train_frac = config["data"]["train_frac"]
+        self.val_frac = config["data"]["val_frac"]
+        self.interval_minutes = config["data"]["interval_minutes"]
+        self.n_days = config["data"]["n_days"]
         
         self.X_train = None
         self.y_train = None
@@ -33,7 +32,7 @@ class VolatilityDataset:
         self.har_train = {}
         self.har_test = {}
 
-    def load_and_prepare(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def load_and_prepare(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Loads all CSVs, preprocesses them, creates sequences, and aggregates them.
         Returns scaled train, valid arrays and stores test dictionaries internally.
@@ -56,7 +55,7 @@ class VolatilityDataset:
         
         for path in file_list:
             stock_name = os.path.splitext(os.path.basename(path))[0]
-            # print(f"Processing {stock_name}...")
+            print(f"Processing {stock_name}...")
             
             try:
                 df_raw = pd.read_csv(path)
@@ -114,7 +113,7 @@ class VolatilityDataset:
         print(f"Total Val Samples: {len(self.X_val)}")
 
         # Scale
-        # In notebook: uses d=1 (only 1 feature currently: log_rv)
+        # only 1 feature currently: log_rv
         d_in = 1 
         self.X_train, self.X_val, self.X_test_dic = scaler(
             self.X_train, self.X_val, self.X_test_dic, d=d_in
@@ -122,7 +121,7 @@ class VolatilityDataset:
         
         return self.X_train, self.y_train, self.X_val, self.y_val
 
-    def get_dataloaders(self, batch_size: int, num_workers: int = 2) -> Tuple[DataLoader, DataLoader]:
+    def get_dataloaders(self, batch_size: int, num_workers: int = 2) -> tuple[DataLoader, DataLoader]:
         """Returns Train and Valid DataLoaders"""
         
         def mk_loader(X, y, bs, shuffle, workers):

@@ -5,7 +5,6 @@ import torch.nn.functional as F
 import logging
 import time
 from tqdm import tqdm
-from typing import Optional
 
 class Trainer:
     """
@@ -26,11 +25,11 @@ class Trainer:
         self.val_loader = val_loader
         
         # Hyperparams
-        self.lr = float(config['training']['lr'])
-        self.weight_decay = float(config['training']['weight_decay'])
-        self.max_epochs = int(config['training']['max_epochs'])
-        self.patience = int(config['training']['patience'])
-        self.save_dir = config['training']['save_dir']
+        self.lr = float(config["training"]["lr"])
+        self.weight_decay = float(config["training"]["weight_decay"])
+        self.max_epochs = int(config["training"]["max_epochs"])
+        self.patience = int(config["training"]["patience"])
+        self.save_dir = config["training"]["save_dir"]
         
         # Optimizer & Scheduler
         self.opt = torch.optim.AdamW(

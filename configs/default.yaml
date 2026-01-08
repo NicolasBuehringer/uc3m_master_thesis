@@ -1,14 +1,13 @@
 data:
   # Base directory for raw data csvs
   data_dir: "raw_data" 
-  # List of tickers to use (optional, if empty could load all)
+  # List of tickers to use (optional, if empty loads all)
   tickers: [] 
   train_frac: 0.8
   val_frac: 0.1
   # Preprocessing params
   interval_minutes: 10
   n_days: 10
-  
   # DataLoader params
   batch_size: 64
   num_workers: 2

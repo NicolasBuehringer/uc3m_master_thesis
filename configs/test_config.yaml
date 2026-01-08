@@ -6,11 +6,11 @@ data:
   interval_minutes: 10
   n_days: 10
   batch_size: 64
-  num_workers: 0 # Avoid multiprocessing overhead/issues in simple test
+  num_workers: 0
 
 model:
   d_in: 1
-  d_model: 32  # Smaller model
+  d_model: 32
   nhead: 2
   num_layers: 1
   p_drop: 0.1
@@ -20,7 +20,7 @@ model:
 
 training:
   lr: 1.0e-3
-  max_epochs: 1 # Just 1 epoch
+  max_epochs: 1
   weight_decay: 1.0e-2
   patience: 10
   save_dir: "checkpoints_test"
