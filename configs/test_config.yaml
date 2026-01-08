@@ -1,0 +1,27 @@
+data:
+  data_dir: "raw_data"
+  tickers: ["Apple"] # Only load Apple for quick test
+  train_frac: 0.8
+  val_frac: 0.1
+  interval_minutes: 10
+  n_days: 10
+  batch_size: 64
+  num_workers: 0
+
+model:
+  d_in: 1
+  d_model: 32
+  nhead: 2
+  num_layers: 1
+  p_drop: 0.1
+  use_cls: true
+  ff_mult: 2
+  max_len: 4096
+
+training:
+  lr: 1.0e-3
+  max_epochs: 1
+  weight_decay: 1.0e-2
+  patience: 10
+  save_dir: "checkpoints_test"
+  experiment_name: "test_run"

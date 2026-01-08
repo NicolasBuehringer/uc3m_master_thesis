@@ -1,0 +1,31 @@
+data:
+  # Base directory for raw data csvs
+  data_dir: "raw_data" 
+  # List of tickers to use (optional, if empty loads all)
+  tickers: [] 
+  train_frac: 0.8
+  val_frac: 0.1
+  # Preprocessing params
+  interval_minutes: 10
+  n_days: 10
+  # DataLoader params
+  batch_size: 64
+  num_workers: 2
+
+model:
+  d_in: 1
+  d_model: 128
+  nhead: 4
+  num_layers: 3
+  p_drop: 0.1
+  use_cls: true
+  ff_mult: 4
+  max_len: 4096
+
+training:
+  lr: 1.0e-3
+  max_epochs: 50
+  weight_decay: 1.0e-2
+  patience: 10
+  save_dir: "checkpoints"
+  experiment_name: "volformer_run"
